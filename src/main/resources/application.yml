@@ -16,12 +16,6 @@ spring:
       enabled: true
   freemarker:
     cache: false
-  mvc:
-    view:
-      prefix: classpath:/static/
-      suffix: .html
-#  mvc:
-#    static-path-pattern: /files/**
 
 file:
   upload:

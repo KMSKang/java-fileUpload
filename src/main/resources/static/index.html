@@ -19,7 +19,6 @@
             <button type="button" onclick="openFile()">파일 선택</button>
             <input type="file" name="file" id="file" onchange="setImg.call(this)" hidden>
             <button type="button" onclick="upload.call(this)">저장</button>
-<!--                <button type="button" onclick="downloadFile()">다운로드</button>-->
         </div>
     </div>
 </form>
@@ -33,21 +32,11 @@
     </thead>
     <tbody id="list"></tbody>
 </table>
-<button type="button" onclick="vacate()">테스트</button>
 <script>
     const img = document.getElementById("img")
     let file
 
     data()
-
-    function vacate() {
-        axios({
-            method: 'POST',
-            url: 'http://localhost:8080/vacate'
-        }).then((response) => {
-            console.log(response)
-        }).catch((error) => console.log(error));
-    }
 
     /**
      * 리스트
@@ -55,7 +44,7 @@
     function data() {
         axios({
             method: 'GET',
-            url: 'http://localhost:8080/data'
+            url: '/data'
         }).then((response) => {
             Array.from(response.data).forEach(function (row){
                 const id = `<td>${row.id}</td>`
@@ -96,7 +85,7 @@
 
         axios({
             method: 'POST',
-            url: 'http://localhost:8080/remove/' + id
+            url: '/remove/' + id
         }).then((response) => {
             if(response.data === "success") {
                 this.closest("tr").remove()
@@ -113,7 +102,7 @@
 
         axios({
             method: 'POST',
-            url: 'http://localhost:8080/upload',
+            url: '/upload',
             data: formData
         }).then((response) => {
             if(response.data.result === true) {
@@ -136,7 +125,7 @@
 
         axios({
             method: 'GET',
-            url: 'http://localhost:8080/download/' + id,
+            url: '/download/' + id,
             responseType: 'blob'
         }).then((response) => {
             const fileName = response.headers['content-disposition'].split('filename=')[1].replaceAll("\"", "") // 파일명
