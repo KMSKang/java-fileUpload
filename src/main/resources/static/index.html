@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
+
+    <style>
+        img { width: 100px; height: 100px; }
+        #upload { display: flex; }
+        #upload-button { display: grid; }
+        table { border-collapse: collapse; }
+    </style>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<form id="form">
+    <div id="upload">
+        <img src="" id="img">
+        <div id="upload-button">
+            <button type="button" onclick="openFile()">파일 선택</button>
+            <input type="file" name="file" id="file" onchange="setImg.call(this)" hidden>
+            <button type="button" onclick="upload.call(this)">저장</button>
+<!--                <button type="button" onclick="downloadFile()">다운로드</button>-->
+        </div>
+    </div>
+</form>
+<table>
+    <thead>
+        <tr>
+            <th>NO</th>
+            <th>이미지</th>
+            <th>기능</th>
+        </tr>
+    </thead>
+    <tbody id="list"></tbody>
+</table>
+<button type="button" onclick="vacate()">테스트</button>
+<script>
+    const img = document.getElementById("img")
+    let file
+
+    data()
+
+    function vacate() {
+        axios({
+            method: 'POST',
+            url: 'http://localhost:8081/vacate'
+        }).then((response) => {
+            console.log(response)
+        }).catch((error) => console.log(error));
+    }
+
+    /**
+     * 리스트
+     */
+    function data() {
+        axios({
+            method: 'GET',
+            url: 'http://localhost:8081/data'
+        }).then((response) => {
+            Array.from(response.data).forEach(function (row){
+                const id = `<td>${row.id}</td>`
+                const img = `<td><img src="data:${row.imageContentType};base64,${row.image}"/></td>`
+                const downloadBtn = `<td><button type="button" onclick="download.call(this)" value="${row.id}">다운로드</button></td>`
+                const removeBtn = `<td><button type="button" onclick="remove.call(this)" value="${row.id}">삭제</button></td>`
+                const tr = `<tr>${id}${img}${downloadBtn}${removeBtn}</tr>`
+                document.getElementById("list").insertAdjacentHTML("beforebegin", tr)
+            })
+        }).catch((error) => console.log(error));
+    }
+
+    /**
+     * 첨부파일 열기
+     */
+    function openFile() {
+        document.getElementById("file").click()
+    }
+
+    /**
+     * 사진 등록
+     */
+    function setImg() {
+        const $this = this
+        const $reader = new FileReader()
+        $reader.onload = function (event) {
+            img.src = event.target.result
+        }
+        $reader.readAsDataURL($this.files[0])
+        file = this.files[0]
+    }
+
+    /**
+     * tr 삭제
+     */
+    function remove() {
+        const id = this.value
+
+        axios({
+            method: 'POST',
+            url: 'http://localhost:8081/remove/' + id
+        }).then((response) => {
+            if(response.data === "success") {
+                this.closest("tr").remove()
+            }
+        }).catch((error) => console.log(error));
+    }
+
+    /**
+     * 사진 저장
+     */
+    function upload() {
+        let formData = new FormData()
+        formData.append("uploadFile", file)
+
+        axios({
+            method: 'POST',
+            url: 'http://localhost:8081/upload',
+            data: formData
+        }).then((response) => {
+            if(response.data.result === true) {
+                const row = response.data
+                const id = `<td>${row.id}</td>`
+                const img = `<td><img src="data:${row.imageContentType};base64,${row.image}"/></td>`
+                const downloadBtn = `<td><button type="button" onclick="download.call(this)" value="${row.id}">다운로드</button></td>`
+                const removeBtn = `<td><button type="button" onclick="remove.call(this)" value="${row.id}">삭제</button></td>`
+                const tr = `<tr>${id}${img}${downloadBtn}${removeBtn}</tr>`
+                document.getElementById("list").insertAdjacentHTML("beforebegin", tr)
+            }
+        }).catch((error) => console.log(error));
+    }
+
+    /**
+     * 다운로드
+     */
+    function download() {
+        const id = this.value
+
+        axios({
+            method: 'GET',
+            url: 'http://localhost:8081/download/' + id,
+            responseType: 'blob'
+        }).then((response) => {
+            const fileName = response.headers['content-disposition'].split('filename=')[1].replaceAll("\"", "") // 파일명
+            const link = document.createElement('a') // a 태그 생성
+            const url = window.URL.createObjectURL(new Blob([response.data]))
+            link.href = url
+            link.setAttribute('download', fileName);
+            link.click();
+            link.remove()
+        }).catch((error) => console.log(error));
+    }
+</script>
+</body>
+</html>
