@@ -2,6 +2,7 @@ package com.fileupload.www.controller;
 
 import com.fileupload.www.dto.FileUploadDto;
 import com.fileupload.www.service.FileUploadService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,11 +14,11 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 public class FileUploadController {
 
-    @Autowired
-    private FileUploadService service;
+    private final FileUploadService service;
 
     /**
      * 리스트
